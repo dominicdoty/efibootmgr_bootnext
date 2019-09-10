@@ -1,0 +1,23 @@
+#!/bin/bash
+
+## Set the next thing to boot with a case insensitive grep
+
+REQARG="$1"
+NOW="$2"
+BOOTLIST=$(efibootmgr | grep -i "$REQARG")
+
+if [ $(echo "$BOOTLIST" | grep -c .) == 1 ]; then
+	BOOTNUM=$(echo "$BOOTLIST" | grep -oP "Boot\K[0-9A-F]{4}")
+	BOOTTITLE=$(echo "$BOOTLIST" | grep -oP "Boot[0-9A-F]{4}\* \K.+")
+	tput setaf 2
+	sudo efibootmgr -n "$BOOTNUM" 1>/dev/null && echo "SUCCESS - Set to \"$BOOTTITLE\""
+	tput sgr0
+
+	if echo "$NOW" | grep -qi "now"; then
+		sudo reboot now
+	fi
+else
+	tput setaf 1
+	echo "NO BOOT ITEM FOUND \"$ARG\""
+	tput sgr0
+fi
